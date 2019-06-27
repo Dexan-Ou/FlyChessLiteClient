@@ -1,0 +1,71 @@
+syntax = "proto2";
+package org.alayse.flychessclientlite.proto;
+
+
+enum CmdID {
+    CMD_ID_INVALID = -1;
+    CMD_ID_UNKNOWN = 0;
+    CMD_ID_HELLO = 1;
+    CMD_ID_AUTH = 2;
+    CMD_ID_SEND_ACTION = 3;
+    CMD_ID_ROOM_LIST = 4;
+    CMD_ID_JOINROOM = 5;
+    CMD_ID_LEFTROOM = 7;
+    CMD_ID_CREATEROOM = 8;
+}
+
+message HelloRequest {
+    required string user = 1;
+    required string text = 2;
+    optional bytes dump_content = 3;
+}
+
+
+message HelloResponse {
+    required int32 retcode = 1;
+    optional string errmsg = 2;
+    optional bytes dump_content = 3;
+}
+
+message Room {
+    required string name = 1;
+    required int32 player = 2;
+    required int32 playerlimit = 3;
+}
+
+message RoomListRequest {
+    enum FilterType {
+        DEFAULT = 0;
+        ALL = 1;
+        EMPTY = 2;
+        FULL = 3;
+        POI = 4;
+    }
+
+    required string access_token = 1;
+    required int32 type = 2;
+}
+
+message RoomListResponse {
+    repeated Room list = 1;
+}
+
+message CreateRoomRequest {
+    required string user = 1;
+    required string roomname = 2;
+    required int32 playerlimit = 3;
+}
+
+message JoinRoomRequest {
+    required string user = 1;
+    required string roomname = 2;
+}
+
+message MsgResponse {
+    enum Error {
+        ERR_OK = 0;
+        ERR_FAIL = -1;
+    }
+    required int32 retcode = 1;
+    optional string errmsg = 2;
+}

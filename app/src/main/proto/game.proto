@@ -1,0 +1,23 @@
+package org.alayse.flychessclientlite.proto.game;
+
+
+message SendActionRequest {
+    required string access_token = 1;
+    required string from = 2;
+    required string content = 3;
+    required string room = 4;
+}
+
+
+message SendActionResponse {
+
+    enum Error {
+        ERR_OK = 0;
+        ERR_SYS = -1;
+    }
+
+    required int32 err_code = 1;
+    required string err_msg = 2;
+    required string content = 3;
+    required string room = 5;
+}
