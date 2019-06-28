@@ -23,9 +23,9 @@ public class SendActionMessageTask extends NanoMarsTaskWrapper<Game.SendActionRe
     private Runnable onError = null;
     private Handler uiHandler = new Handler(Looper.getMainLooper());
 
-    public SendActionMessageTask(String userName, String content, String roomName){
+    public SendActionMessageTask(String access_token, String userName, String content, String roomName){
         super(new Game.SendActionRequest(), new Game.SendActionResponse());
-
+        request.accessToken = access_token;
         request.from = userName;
         request.content = content;
         request.room = roomName;

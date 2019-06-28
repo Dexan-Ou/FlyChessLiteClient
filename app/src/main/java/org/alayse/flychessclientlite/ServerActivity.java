@@ -37,26 +37,6 @@ public class ServerActivity extends AppCompatActivity {
             }
             roomListAdapter.notifyDataSetChanged();
         }
-
-        @Override
-        public void createRoomCallback(boolean ret) {
-
-        }
-
-        @Override
-        public void joinRoomCallback(boolean ret, String msg) {
-
-        }
-
-        @Override
-        public void leftRoomCallback(boolean ret) {
-
-        }
-
-        @Override
-        public void sendActionCallback(boolean ret) {
-
-        }
     };
 
     @Override
@@ -67,6 +47,7 @@ public class ServerActivity extends AppCompatActivity {
         final MainService mainService = new MainService();
         MarsServiceProxy.setOnPushMessageListener(BaseConstants.PUSHMSG_CMDID, mainService);
 
+        Network.getInstance().hello();
         roomList = new ArrayList<>();
         ListView listView = (ListView)findViewById(R.id.Server_ListView);
         roomListAdapter = new SimpleAdapter(this,roomList,R.layout.list_item,new String[]{"name","player","playerlimit"},new int[]{R.id.Room_name,R.id.Room_player,R.id.Room_playerlimit});
@@ -87,6 +68,5 @@ public class ServerActivity extends AppCompatActivity {
             }
         });
 
-        Network.getInstance().joinRoom(networkInterface,"someone","someroom");
     }
 }

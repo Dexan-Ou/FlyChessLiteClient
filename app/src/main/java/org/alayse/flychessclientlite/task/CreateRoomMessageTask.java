@@ -17,17 +17,19 @@ import org.alayse.flychessclientlite.proto.Main;
         shortChannelSupport = false
 )
 public class CreateRoomMessageTask extends NanoMarsTaskWrapper<Main.CreateRoomRequest, Main.MsgResponse> {
+
     private Runnable callback = null;
     private Runnable onOK = null;
     private Runnable onError = null;
     private Handler uiHandler = new Handler(Looper.getMainLooper());
 
-    public CreateRoomMessageTask(String userName, String roomName, int playerLimit){
+    public CreateRoomMessageTask(String access_token, String userName, String roomName, int playerLimit, int botNum){
         super(new Main.CreateRoomRequest(), new Main.MsgResponse());
-
+        request.accessToken = access_token;
         request.user = userName;
         request.roomname = roomName;
         request.playerlimit = playerLimit;
+        request.botnum = botNum;
     }
 
     @Override

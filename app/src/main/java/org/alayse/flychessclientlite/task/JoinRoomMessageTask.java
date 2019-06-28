@@ -23,9 +23,9 @@ public class JoinRoomMessageTask extends NanoMarsTaskWrapper<Main.JoinRoomReques
     private String msg = null;
     private Handler uiHandler = new Handler(Looper.getMainLooper());
 
-    public JoinRoomMessageTask(String userName, String roomName){
+    public JoinRoomMessageTask(String access_token, String userName, String roomName){
         super(new Main.JoinRoomRequest(), new Main.MsgResponse());
-
+        request.accessToken = access_token;
         request.user = userName;
         request.roomname = roomName;
     }

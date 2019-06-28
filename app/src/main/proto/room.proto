@@ -4,15 +4,3 @@ package org.alayse.flychessclientlite.proto.game;
 message RoomRequest {
     required string room = 1;
 }
-
-
-message RoomResponse {
-
-    enum Error {
-        ERR_OK = 0;
-        ERR_SYS = -1;
-    }
-
-    required int32 err_code = 1;
-    required string err_msg = 2;
-}

@@ -18,6 +18,4 @@ message SendActionResponse {
 
     required int32 err_code = 1;
     required string err_msg = 2;
-    required string content = 3;
-    required string room = 5;
 }
