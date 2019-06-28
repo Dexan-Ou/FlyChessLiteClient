@@ -15,16 +15,12 @@ enum CmdID {
 }
 
 message HelloRequest {
-    required string user = 1;
-    required string text = 2;
-    optional bytes dump_content = 3;
+    required string access_token = 1;
 }
 
 
 message HelloResponse {
-    required int32 retcode = 1;
-    optional string errmsg = 2;
-    optional bytes dump_content = 3;
+    required string access_token = 1;
 }
 
 message Room {
@@ -51,20 +47,24 @@ message RoomListResponse {
 }
 
 message CreateRoomRequest {
-    required string user = 1;
-    required string roomname = 2;
-    required int32 playerlimit = 3;
+    required string access_token = 1;
+    required string user = 2;
+    required string roomname = 3;
+    required int32 botnum = 4;
+    required int32 playerlimit = 5;
 }
 
 message JoinRoomRequest {
-    required string user = 1;
-    required string roomname = 2;
+    required string access_token = 1;
+    required string user = 2;
+    required string roomname = 3;
 }
 
 message MsgResponse {
     enum Error {
         ERR_OK = 0;
         ERR_FAIL = -1;
+        ERR_START = 1;
     }
     required int32 retcode = 1;
     optional string errmsg = 2;

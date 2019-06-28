@@ -9,6 +9,7 @@ import com.tencent.mars.sample.wrapper.remote.NanoMarsTaskWrapper;
 
 import org.alayse.flychessclientlite.proto.Main;
 import org.alayse.flychessclientlite.task.CreateRoomMessageTask;
+import org.alayse.flychessclientlite.task.HelloMessageTask;
 import org.alayse.flychessclientlite.task.JoinRoomMessageTask;
 import org.alayse.flychessclientlite.task.LeftRoomMessageTask;
 import org.alayse.flychessclientlite.task.SendActionMessageTask;
@@ -17,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Network {
+    private static final String TAG = "Flychess.Network";
 
     public static final String SERVER_HOST = "localhost";
     public static final int SERVER_SHORT_PORT = 8080;
@@ -24,6 +26,13 @@ public class Network {
     private static final Network inst = new Network();
 
     private NanoMarsTaskWrapper<Main.RoomListRequest, Main.RoomListResponse> taskGetRoomList = null;
+    private CreateRoomMessageTask createRoomMessageTask = null;
+    private JoinRoomMessageTask joinRoomMessageTask = null;
+    private LeftRoomMessageTask leftRoomMessageTask = null;
+    private SendActionMessageTask sendActionMessageTask = null;
+    private HelloMessageTask helloMessageTask = null;
+
+    private String access_token = "POI";
 
     public static Network getInstance(){
         return inst;
@@ -79,40 +88,50 @@ public class Network {
     }
 
     public void createRoom(final NetworkInterface nif, String userName, String roomName, int playerLimit){
-        MarsServiceProxy.send(new CreateRoomMessageTask(userName,roomName,playerLimit)
-            .onError(new Runnable() {
-                @Override
-                public void run() {
-                    nif.createRoomCallback(false);
-                }
-            })
-            .onOK(new Runnable() {
-                @Override
-                public void run() {
-                    nif.createRoomCallback(true);
-                }
-            }));
+        Log.i(TAG, "createRoom");
+        if (createRoomMessageTask != null)
+            MarsServiceProxy.cancel(createRoomMessageTask);
+        createRoomMessageTask = new CreateRoomMessageTask(this.access_token, userName, roomName, playerLimit, 0)
+                .onError(new Runnable() {
+                    @Override
+                    public void run() {
+                        nif.createRoomCallback(false);
+                    }
+                })
+                .onOK(new Runnable() {
+                    @Override
+                    public void run() {
+                        nif.createRoomCallback(true);
+                    }
+                });
+        MarsServiceProxy.send(createRoomMessageTask);
     }
 
     public void joinRoom(final NetworkInterface nif, String userName, String roomName){
-        final JoinRoomMessageTask joinRoomMessageTask = new JoinRoomMessageTask(userName, roomName);
-        MarsServiceProxy.send(joinRoomMessageTask
+        Log.i(TAG, "joinRoom");
+        if (joinRoomMessageTask != null)
+            MarsServiceProxy.cancel(joinRoomMessageTask);
+        joinRoomMessageTask = new JoinRoomMessageTask(this.access_token, userName, roomName)
                 .onError(new Runnable() {
-            @Override
-            public void run() {
-                nif.joinRoomCallback(false, null);
-            }
-        })
+                    @Override
+                    public void run() {
+                        nif.joinRoomCallback(false, null);
+                    }
+                })
                 .onOK(new Runnable() {
                     @Override
                     public void run() {
                         nif.joinRoomCallback(true, joinRoomMessageTask.getMsg());
                     }
-                }));
+                });
+        MarsServiceProxy.send(joinRoomMessageTask);
     }
 
     public void leftRoom(final NetworkInterface nif, String userName){
-        MarsServiceProxy.send(new LeftRoomMessageTask(userName)
+        Log.i(TAG, "leftRoom");
+        if (leftRoomMessageTask != null)
+            MarsServiceProxy.cancel(leftRoomMessageTask);
+        leftRoomMessageTask = new LeftRoomMessageTask(this.access_token, userName)
                 .onError(new Runnable() {
                     @Override
                     public void run() {
@@ -124,11 +143,15 @@ public class Network {
                     public void run() {
                         nif.leftRoomCallback(true);
                     }
-                }));
+                });
+        MarsServiceProxy.send(leftRoomMessageTask);
     }
 
     public void sendAction(final NetworkInterface nif, String userName, String content, String roomName){
-        MarsServiceProxy.send(new SendActionMessageTask(userName, content, roomName)
+        Log.i(TAG, "sendAction");
+        if (sendActionMessageTask != null)
+            MarsServiceProxy.cancel(sendActionMessageTask);
+        sendActionMessageTask = new SendActionMessageTask(this.access_token, userName, content, roomName)
                 .onError(new Runnable() {
                     @Override
                     public void run() {
@@ -140,7 +163,28 @@ public class Network {
                     public void run() {
                         nif.sendActionCallback(true);
                     }
-                }));
+                });
+        MarsServiceProxy.send(sendActionMessageTask);
+    }
+
+    public void hello(){
+        Log.i(TAG, "hello");
+        if (helloMessageTask != null)
+            MarsServiceProxy.cancel(helloMessageTask);
+        final NetworkInterface nif = new NetworkInterface() {
+            @Override
+            public void helloCallback(String access_token) {
+                Network.getInstance().access_token = access_token;
+            }
+        };
+        helloMessageTask = new HelloMessageTask(this.access_token)
+                .setCallback(new Runnable() {
+                    @Override
+                    public void run() {
+                        nif.helloCallback(helloMessageTask.getAccess_token());
+                    }
+                });
+        MarsServiceProxy.send(helloMessageTask);
     }
 
 }

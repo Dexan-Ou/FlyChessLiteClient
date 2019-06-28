@@ -22,9 +22,9 @@ public class LeftRoomMessageTask extends NanoMarsTaskWrapper<Main.JoinRoomReques
     private Runnable onError = null;
     private Handler uiHandler = new Handler(Looper.getMainLooper());
 
-    public LeftRoomMessageTask(String userName){
+    public LeftRoomMessageTask(String access_token, String userName){
         super(new Main.JoinRoomRequest(), new Main.MsgResponse());
-
+        request.accessToken = access_token;
         request.user = userName;
         request.roomname = "LEFT";
     }
