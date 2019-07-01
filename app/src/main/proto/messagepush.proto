@@ -1,6 +1,5 @@
 package org.alayse.flychessclientlite.proto.game;
 
-
 message MessagePush {
     required string room = 1;
     required string content = 2;

@@ -11,6 +11,9 @@ import com.tencent.mars.sample.wrapper.service.MarsServiceNative;
 import com.tencent.mars.sample.wrapper.service.MarsServiceProfile;
 import com.tencent.mars.sample.wrapper.service.MarsServiceProfileFactory;
 import com.tencent.mars.stn.StnLogic;
+import com.tencent.mars.sample.wrapper.remote.MarsServiceProxy;
+import org.alayse.flychessclientlite.core.MainService;
+import com.tencent.mars.sample.utils.print.BaseConstants;
 
 import org.alayse.flychessclientlite.core.Network;
 
@@ -68,8 +71,10 @@ public class FlyChessApplication extends Application {
         // Initialize MarsServiceProxy for local client, can be moved to other place
         MarsServiceProxy.init(this, getMainLooper(), null);
         MarsServiceProxy.inst.accountInfo = accountInfo;
+        final MainService mainService = new MainService();
+        MarsServiceProxy.setOnPushMessageListener(BaseConstants.PUSHMSG_CMDID, mainService);
 
-        Log.i(TAG, "application started");
+        Log.d(TAG, "application started");
     }
 
     @Override

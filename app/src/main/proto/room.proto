@@ -1,6 +1,5 @@
 package org.alayse.flychessclientlite.proto.game;
 
-
 message RoomRequest {
     required string room = 1;
 }

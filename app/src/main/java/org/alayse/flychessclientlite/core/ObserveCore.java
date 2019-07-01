@@ -11,9 +11,10 @@ import org.alayse.flychessclientlite.utils.Constants;
 
 import java.util.Observable;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import android.util.*;
 
 public class ObserveCore extends Observable {
-    public static String TAG = ObserveCore.class.getSimpleName();
+    public static String TAG = "FlyChess.MessagePush";
 
     private static ObserveCore inst = new ObserveCore();
 
@@ -41,15 +42,31 @@ public class ObserveCore extends Observable {
             if (intent != null && intent.getAction().equals(Constants.PUSHACTION)){
                 String roomName = intent.getStringExtra(Constants.intentMsgRoomName);
                 String content = intent.getStringExtra(Constants.intentMsgContent);
+                Log.i(TAG, "" + content);
+                int nextPlayer = intent.getIntExtra(Constants.intentMsgNextPlayer,0);
                 synchronized (this){
                     Messagepush.MessagePush entity = new Messagepush.MessagePush();
                     entity.room = roomName;
                     entity.content = content;
+                    Log.e("Receive_Content", "" + content);
+                    entity.nextplayer = nextPlayer;
                     dataArrays.add(entity);
                 }
                 setChanged();
                 notifyObservers();
             }
         }
+    }
+
+    public Messagepush.MessagePush getMessage(){
+        return dataArrays.getFirst();
+    }
+
+    public void popMessage(){
+        dataArrays.pollFirst();
+    }
+
+    public int getSize(){
+        return dataArrays.size();
     }
 }
