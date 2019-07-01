@@ -40,7 +40,7 @@ public class JoinRoomMessageTask extends NanoMarsTaskWrapper<Main.JoinRoomReques
 
     @Override
     public void onPostDecode(Main.MsgResponse response) {
-        if (response.retcode == Main.MsgResponse.ERR_OK){
+        if (response.retcode != Main.MsgResponse.ERR_FAIL){
             callback = onOK;
             this.msg = response.errmsg;
         }
