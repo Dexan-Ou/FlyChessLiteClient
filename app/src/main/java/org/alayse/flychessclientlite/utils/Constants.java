@@ -7,5 +7,6 @@ public class Constants {
 
     public static final String intentMsgRoomName = "msgroom";
     public static final String intentMsgContent = "msgcontent";
+    public static final String intentMsgNextPlayer = "msgnextPlayer";
 
 }

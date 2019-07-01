@@ -23,6 +23,7 @@ public class MessageHandler {
                     intent.setAction(Constants.PUSHACTION);
                     intent.putExtra(Constants.intentMsgRoomName, message.room);
                     intent.putExtra(Constants.intentMsgContent, message.content);
+                    intent.putExtra(Constants.intentMsgNextPlayer, message.nextplayer);
                     FlyChessApplication.getContext().sendBroadcast(intent);
                 } catch (InvalidProtocolBufferNanoException e) {
                     Log.e(TAG, "%s", e);

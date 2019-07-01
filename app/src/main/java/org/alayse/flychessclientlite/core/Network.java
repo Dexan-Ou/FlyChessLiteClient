@@ -61,7 +61,7 @@ public class Network {
 
             @Override
             public void onTaskEnd(int errType, int errCode) {
-                Log.i("Flychess.Network",response.list.length + "");
+                Log.i("Flychess.Network", response.list.length + "");
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
 
                     @Override
@@ -175,6 +175,7 @@ public class Network {
             @Override
             public void helloCallback(String access_token) {
                 Network.getInstance().access_token = access_token;
+                Log.d(access_token, "Connect Successful");
             }
         };
         helloMessageTask = new HelloMessageTask(this.access_token)

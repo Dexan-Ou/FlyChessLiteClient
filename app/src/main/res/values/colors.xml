@@ -3,4 +3,10 @@
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
+    <color name="backgroundStart">#D3F5FC</color>
+    <color name="backgroundCenter">#ECF3F2</color>
+    <color name="backgroundEnd">#E4ECFC</color>
+    <color name="waitBackgroundStart">#BEBEBE</color>
+    <color name="waitBackgroundCenter">#E6E6E6</color>
+    <color name="waitBackgroundEnd">#C8C8C8</color>
 </resources>
