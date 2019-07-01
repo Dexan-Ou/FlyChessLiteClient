@@ -38,7 +38,7 @@ public class CreateRoomMessageTask extends NanoMarsTaskWrapper<Main.CreateRoomRe
 
     @Override
     public void onPostDecode(Main.MsgResponse response) {
-        if (response.retcode == Main.MsgResponse.ERR_OK){
+        if (response.retcode != Main.MsgResponse.ERR_FAIL){
             callback = onOK;
         }
         else{
