@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import android.util.*;
 
 public class ObserveCore extends Observable {
-    public static String TAG = "FlyChess.MessagePush";
+    public static String TAG = ObserveCore.class.getSimpleName();
 
     private static ObserveCore inst = new ObserveCore();
 
@@ -42,7 +42,7 @@ public class ObserveCore extends Observable {
             if (intent != null && intent.getAction().equals(Constants.PUSHACTION)){
                 String roomName = intent.getStringExtra(Constants.intentMsgRoomName);
                 String content = intent.getStringExtra(Constants.intentMsgContent);
-                Log.i(TAG, "" + content);
+                Log.e("MessagePush", "" + content);
                 int nextPlayer = intent.getIntExtra(Constants.intentMsgNextPlayer,0);
                 synchronized (this){
                     Messagepush.MessagePush entity = new Messagepush.MessagePush();
