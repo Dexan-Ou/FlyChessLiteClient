@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.content.Intent;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -111,15 +110,11 @@ public class RoomActivity extends AppCompatActivity {
         createServer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(TextUtils.isEmpty(roomPlayerLimit.getText().toString())||TextUtils.isEmpty(roomBot.getText().toString())){
-                    Toast.makeText(getApplicationContext(),"房间人数和bot数不能为空",Toast.LENGTH_SHORT).show();
-                }
-                else{
-                    int limit, bot;
-                    limit = Integer.parseInt(roomPlayerLimit.getText().toString());
-                    bot = Integer.parseInt(roomBot.getText().toString());
-                    Network.getInstance().createRoom(networkInterface, playerName, roomName, limit);
-                }
+                int limit, bot;
+                limit = Integer.parseInt(roomPlayerLimit.getText().toString());
+                bot = Integer.parseInt(roomBot.getText().toString());
+
+                Network.getInstance().createRoom(networkInterface, playerName, roomName, limit);
             }
         });
 

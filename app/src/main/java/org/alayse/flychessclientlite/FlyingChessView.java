@@ -97,6 +97,7 @@ public class FlyingChessView extends View implements Observer{
     private Paint MyPaint;
     private ArrayList<Position> Positions;
     private ArrayList<Position> PlanePositions;
+    private static int[] AirportIds = {76,77,78,79,81,82,83,84,86,87,88,89,91,92,93,94};
     private Map<String, Integer> Direction2Id;
     private int[] Dice2Image;
 
@@ -110,6 +111,7 @@ public class FlyingChessView extends View implements Observer{
     private int NowDice;
     private ArrayList<Position> Flight;
     private boolean IsAI;
+    private boolean AIMessageReceive;
     private volatile static boolean IsPlanePress;
     private volatile static boolean IsDicePress;
     private boolean IsReplay;
@@ -196,6 +198,7 @@ public class FlyingChessView extends View implements Observer{
         IsAI = false;
         IsReplay = true;
         IsFinish = false;
+        AIMessageReceive = true;
 
         File replayRoot = new File(REPLAY_ROOT);
         if(!replayRoot.exists()){
@@ -254,6 +257,9 @@ public class FlyingChessView extends View implements Observer{
                     IsDicePress = false;
                     PressPlanePosition = null;
                 }
+                if(IsAI){
+                    AIMessageReceive = true;
+                }
                 Log.d("NextPlayer", "" + message.nextplayer);
             }
         }
@@ -272,7 +278,6 @@ public class FlyingChessView extends View implements Observer{
             @Override
             public void run(){
                 try{
-                    while(IsAI && IsDicePress);
                     Network.getInstance().hello();
                     String content = "" + (IsAI?"1,":"0,") + (NowDice+1) + "," + generateMessage(pos);
                     Log.d("Send", content);
@@ -291,17 +296,12 @@ public class FlyingChessView extends View implements Observer{
         super.onTouchEvent(event);
         if(!IsReplay && !IsFinish){
             int nowX = (int)event.getX(), nowY = (int)event.getY();
-            Map<String, Position> result = hasPlane(nowX, nowY);
-
-            isDicePosition(nowX, nowY);
+            Map<String, Position> result = hasPlane(nowX, nowY, NowPlayerId);
 
             // 如果当前点击位置有飞机
             if(result.get("flag").getChessId() == 1 && (!IsPlanePress) && (!IsAI) && NextPlayer == 1){
                 Position position = result.get("position");
-                int playerId = position.getChessId();
-
-                // 如果棋子颜色和当前玩家Id相同
-                if(playerId == NowPlayerId && (!IsPlanePress) && IsDicePress && (!IsAI) && NextPlayer == 1){
+                if(result.get("flag").getChessNum() == 0 || NowDice == 5){
                     IsPlanePress = true;
                     Log.d("PlanePressTest", "" + IsPlanePress);
                     PressPlanePosition = position;
@@ -309,7 +309,6 @@ public class FlyingChessView extends View implements Observer{
                     if (event.getAction() == MotionEvent.ACTION_DOWN){
                         sendStatus(position);
                     }
-
                     else if (event.getAction() == MotionEvent.ACTION_UP){
                         PressPlanePosition = null;
                         this.postInvalidate();
@@ -629,23 +628,59 @@ public class FlyingChessView extends View implements Observer{
     }
 
     private void AIRun(){
+        UIHandler = new Handler(Looper.getMainLooper()){
+            @Override
+            public void handleMessage(Message msg){
+                if(msg.what == 0x123){
+                    // 主线程重新绘制
+                    FlyingChessView.this.postInvalidate();
+                }
+                else if(msg.what == 0x124){
+                    IsPlanePress = false;
+                    Log.d("Dice", "" + NowDice);
+                }
+            }
+        };
+
         new Thread(new Runnable(){
             @Override
             public void run(){
                 try{
                     while(IsAI){
-                        if(NextPlayer == 1){
-                            updateDice();
-                            Position selectPosition = null;
-                            for(Position pos: PlanePositions){
-                                if(selectPosition == null){
-                                    selectPosition = pos;
-                                }
-                                else if(Math.random() > 0.5){
-                                    selectPosition = pos;
+                        if(NextPlayer == 1 && AIMessageReceive){
+                            IsDicePress = true;
+                            IsPlanePress = true;
+                            Message msg = null;
+                            for(int i=0; i<10; ++i){
+                                NowDice = (int)(Math.random()*6);
+                                msg = UIHandler.obtainMessage();
+                                msg.what = 0x123;
+                                UIHandler.sendMessage(msg);
+                                if(i < 9){
+                                    Thread.sleep(100);
                                 }
                             }
-                            sendStatus(selectPosition);
+                            msg = UIHandler.obtainMessage();
+                            msg.what = 0x124;
+                            UIHandler.sendMessage(msg);
+
+                            Position selectPosition = null;
+                            for(Position pos: PlanePositions){
+                                if(pos.getChessId() == NowPlayerId && (NowDice == 5 || (!isInAirport(pos)))){
+                                    if(selectPosition == null){
+                                        selectPosition = pos;
+                                    }
+                                    else if(Math.random() > 0.5){
+                                        selectPosition = pos;
+                                    }
+                                }
+                            }
+                            Thread.sleep(1000);
+
+                            String content = "" + "0," + (NowDice+1) + "," + generateMessage(pos);
+                            Log.d("Send", content);
+                            Network.getInstance().sendAction(networkInterface, NowUser, content, NowRoom);
+                            AIMessageReceive = false;
                         }
                     }
                 }
@@ -1173,22 +1208,40 @@ public class FlyingChessView extends View implements Observer{
         return -1;
     }
 
+    private int isInAirport(Position position){
+        Float centerX, centerY;
+        float width = (float)RECT_WIDTH, x = (float)nowX, y = (float)nowY;
+        int inAirport = 0;
+        for(int id: AirportIds){
+            centerX = Positions.get(id).getX();
+            centerY = Positions.get(id).getY();
+            if(abs(position.getX()-centerX) < width && abs(position.getY()-centerY) < height){
+                inAirport = 1;
+                break;
+            }
+        }
+        return inAirport;
+    }
+
     private Map<String, Position> hasPlane(int nowX, int nowY){
-        Float centerX, centerY, dis;
-        float radius = (float)RADIUS, width = (float)RECT_WIDTH, x = (float)nowX, y = (float)nowY;
+        Float centerX, centerY;
+        float width = (float)RECT_WIDTH, x = (float)nowX, y = (float)nowY;
         Map<String, Position> result = new HashMap<String, Position>();
 
-        int flag = 0;
+        int flag = 0, chessId;
         for(Position position: PlanePositions){
             centerX = position.getX();
             centerY = position.getY();
-            if(Math.abs(centerX-x) < width && Math.abs(centerY-y) < width){
+            chessId = position.getChessId();
+            if(Math.abs(centerX-x) < width && Math.abs(centerY-y) < width && chessId == NowPlayerId){
                 result.put("position", position);
                 flag = 1;
                 break;
             }
         }
-        result.put("flag", new Position(0, 0, flag, 0));
+
+        int inAirport = isInAirport(position);
+        result.put("flag", new Position(0, 0, flag, inAirport));
         return result;
     }
 

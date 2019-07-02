@@ -16,8 +16,6 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import org.alayse.flychessclientlite.core.ObserveCore;
-
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "Flychess.Main";
@@ -52,7 +50,6 @@ public class MainActivity extends AppCompatActivity {
         context = getApplicationContext();
         instance = this;
         super.onCreate(savedInstanceState);
-        ObserveCore.getInstance().getSize();
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
         replay = (ImageView) findViewById(R.id.replay);
