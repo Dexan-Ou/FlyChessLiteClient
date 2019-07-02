@@ -249,9 +249,8 @@ public class FlyingChessView extends View implements Observer{
                             Flight.add(new Position(nextPosition.getX(), nextPosition.getY(), nowChess, 1));
                         }
                     }
-                    Log.d("FlightSize", "" + Flight.size());
+                    Log.d("FlightSize", "" + Flight.size()); 
                     updatePlanes(Flight);
-                    saveFlight(Flight); 
                 }
                 else{
                     IsDicePress = false;
@@ -291,12 +290,12 @@ public class FlyingChessView extends View implements Observer{
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         super.onTouchEvent(event);
-        if(!IsReplay && !IsFinish){
+        if(!IsFinish){
             int nowX = (int)event.getX(), nowY = (int)event.getY();
             Map<String, Position> result = hasPlane(nowX, nowY);
 
             // 如果当前点击位置有飞机
-            if(result.get("flag").getChessId() == 1 && (!IsPlanePress) && (!IsAI) && NextPlayer == 1){
+            if(result.get("flag").getChessId() == 1 && (!IsPlanePress) && (!IsAI) && (!IsReplay) && NextPlayer == 1){
                 Position position = result.get("position");
                 if(result.get("flag").getChessNum() == 0 || NowDice == 5){
                     IsPlanePress = true;
@@ -316,7 +315,7 @@ public class FlyingChessView extends View implements Observer{
                 }
             }
 
-            else if(isDicePosition(nowX, nowY) && (!IsDicePress) && (!IsAI) && NextPlayer == 1){
+            else if(isDicePosition(nowX, nowY) && (!IsDicePress) && (!IsAI) && (!IsReplay) && NextPlayer == 1){
                 if (event.getAction() == MotionEvent.ACTION_DOWN){
                     updateDice();
                 }
@@ -434,6 +433,7 @@ public class FlyingChessView extends View implements Observer{
                                 PlanePositions.add(new Position(nextPosition.getX(), nextPosition.getY(), nextPosition.getChessId(), 1));
                             }
                         }
+                        savePlanePositions();
 
                         msg = UIHandler.obtainMessage();
                         msg.what = 0x123;
@@ -454,17 +454,24 @@ public class FlyingChessView extends View implements Observer{
         t.start();
     }
 
-    private void saveFlight(ArrayList<Position> Flight){
+    private void savePlanePositions(){
         try{
             File file = new File(REPLAY_ROOT, ReplayFile);
             FileOutputStream os = new FileOutputStream(file, true);
             OutputStreamWriter writer = new OutputStreamWriter(os, "UTF-8");
-            for(Position position: Flight){
-                writer.write("" + position.getX() + "," + position.getY() + "," + position.getChessId() + "\r\n");
+            for(int i=0; i<PlanePositions.size(); ++i){
+                Position position = PlanePositions.get(i);
+                writer.write("" + position.getX() + "," + position.getY() + "," 
+                            + position.getChessId() + "," + position.getChessNum());
+                if(i < PlanePositions.size()-1){
+                    writer.write(";");
+                }
+                else{
+                    writer.write("\r\n");
+                }
             }
             writer.close();
             os.close();
-            Log.e("Save Flight", "Sucessful");
         }
         catch (Exception e) {
             Log.e("Save Flight", "" + e);
@@ -525,25 +532,48 @@ public class FlyingChessView extends View implements Observer{
 
     private void replay(){
         if(IsReplay){
-            try {
-                Flight.clear();
-                File file = new File(REPLAY_ROOT, ReplayFile);
-                FileInputStream is = new FileInputStream(file);
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
-                String line = null;
-                while((line = bufferedReader.readLine()) != null){
-                    String[] temp = line.split(",");
-                    float x = Float.parseFloat(temp[0]), y = Float.parseFloat(temp[1]);
-                    int color = Integer.parseInt(temp[2]);
-                    Flight.add(new Position(x, y, color, 1));
+            IsReplay = false;
+            UIHandler = new Handler(Looper.getMainLooper()){
+                @Override
+                public void handleMessage(Message msg){
+                    if(msg.what == 0x123){
+                        // 主线程重新绘制
+                        FlyingChessView.this.postInvalidate();
+                    }
                 }
-                is.close();
-                bufferedReader.close();
-                updatePlanes(Flight);
-            } 
-            catch (Exception e) {
-                Log.e("", "" + e);
-            }
+            };
+
+            new Thread(new Runnable() {
+                @Override
+                public void run(){
+                    try {
+                        Message msg = null;
+                        File file = new File(REPLAY_ROOT, ReplayFile);
+                        FileInputStream is = new FileInputStream(file);
+                        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
+                        String line = null;
+                        while((line = bufferedReader.readLine()) != null){
+                            String[] planePositions = line.split(";");
+                            PlanePositions.clear();
+                            for(String position: planePositions){
+                                String[] temp = position.split(",");
+                                float x = Float.parseFloat(temp[0]), y = Float.parseFloat(temp[1]);
+                                int color = Integer.parseInt(temp[2]), num = Integer.parseInt(temp[3]);
+                                PlanePositions.add(new Position(x, y, color, num));
+                            }
+                            msg = UIHandler.obtainMessage();
+                            msg.what = 0x123;
+                            UIHandler.sendMessage(msg);
+                            Thread.sleep(250);
+                        }
+                        is.close();
+                        bufferedReader.close();
+                    } 
+                    catch (Exception e) {
+                        Log.e("", "" + e);
+                    }
+                }
+            }).start();
         }
     }
 
@@ -711,8 +741,10 @@ public class FlyingChessView extends View implements Observer{
         }
         else{
             Network.getInstance().leftRoom(networkInterface, NowUser);
-            Intent intent = new Intent(getContext(), RoomActivity.class);
-            getContext().startActivity(intent);
+            Activity nowActivity = (Activity)getContext();
+            Intent intent = new Intent(nowActivity, RoomActivity.class);
+            nowActivity.finish();
+            nowActivity.startActivity(intent);
         }
     }
 

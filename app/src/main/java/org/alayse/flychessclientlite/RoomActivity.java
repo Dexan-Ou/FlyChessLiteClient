@@ -70,6 +70,7 @@ public class RoomActivity extends AppCompatActivity {
                 Date date = new Date(System.currentTimeMillis());
                 intent.putExtra("replayFile", simpleDateFormat.format(date) + ".txt");
                 intent.setClass(RoomActivity.this, FlyingChessActivity.class);
+                RoomActivity.this.finish();
                 startActivity(intent);
             }
         }
@@ -87,6 +88,7 @@ public class RoomActivity extends AppCompatActivity {
                 Date date = new Date(System.currentTimeMillis());
                 intent.putExtra("replayFile", simpleDateFormat.format(date) + ".txt");
                 intent.setClass(RoomActivity.this, FlyingChessActivity.class);
+                RoomActivity.this.finish();
                 startActivity(intent);
             }
             else{

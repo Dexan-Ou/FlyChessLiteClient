@@ -14,6 +14,7 @@ public class FlyingChessActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_flyingchess);
 
+        Network.getInstance().hello();
         Intent intent = getIntent();
         FlyingChessView v = (FlyingChessView)findViewById(R.id.FlyingChessView);
         String room = intent.getStringExtra("room"), user = intent.getStringExtra("user"), replayFile = intent.getStringExtra("replayFile");
