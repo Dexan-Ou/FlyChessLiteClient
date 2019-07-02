@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:layout_width="wrap_content"
-    android:layout_height="fill_parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:background="@drawable/bg"
     android:paddingBottom="20dp"
     android:layout_gravity="center_vertical"
-    android:gravity="center_horizontal"
-    >
+    android:gravity="center_horizontal">
 
     <ImageView
         android:id="@+id/list_title"
@@ -16,70 +15,6 @@
         android:background="@drawable/room_title"
         android:gravity="center_vertical" />
 
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="50dp"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"
-        android:weightSum="2"
-        >
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            >
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="50dp"
-                android:lineSpacingExtra="8sp"
-                android:text="人数上限:"
-                android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                android:textStyle="bold"
-                android:typeface="normal" />
-
-            <EditText
-                android:id="@+id/room_player_limit"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:textSize="24sp"></EditText>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            >
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="50dp"
-                android:lineSpacingExtra="8sp"
-                android:text="bot数量:"
-                android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                android:textStyle="bold" />
-
-            <EditText
-                android:id="@+id/room_bot"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:textSize="24sp"></EditText>
-        </LinearLayout>
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/create_home"
-        android:text="创建房间"
-        android:gravity="center"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="#ffffff"
-        android:layout_width="fill_parent"
-        android:layout_height="50dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:background="@drawable/room_back"
-        >
-    </TextView>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -112,18 +47,40 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
             android:textStyle="bold" />
     </LinearLayout>
-    <ListView
-        android:id="@+id/Server_ListView"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="280dp"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"/>
-
-    <ImageView
-        android:id="@+id/reflesh"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_marginTop="20dp"
-        android:background="@drawable/refresh" />
+        android:layout_height="match_parent">
+        <ListView
+            android:id="@+id/Server_ListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_above="@id/Server_bottomLine"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"/>
+        <LinearLayout
+            android:id="@+id/Server_bottomLine"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:layout_alignParentBottom="true">
+            <ImageView
+                android:id="@+id/reflesh"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/refresh" />
+            <TextView
+                android:id="@+id/create_home"
+                android:text="@string/serverView_createRoom"
+                android:gravity="center"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#ffffff"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/room_back" />
+        </LinearLayout>
+    </RelativeLayout>
 
 </LinearLayout>

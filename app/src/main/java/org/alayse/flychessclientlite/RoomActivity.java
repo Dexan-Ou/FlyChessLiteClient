@@ -1,6 +1,9 @@
 package org.alayse.flychessclientlite;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.content.Intent;
 import android.support.annotation.Nullable;
@@ -28,8 +31,9 @@ import java.text.*;
 import android.util.*;
 
 public class RoomActivity extends AppCompatActivity {
+    private Context mContext;
+
     private TextView createServer;
-    private EditText roomPlayerLimit, roomBot;
     private ImageView reflesh;
     private String playerName, roomName;
 
@@ -100,8 +104,9 @@ public class RoomActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.local_server_view);
-        roomPlayerLimit = findViewById(R.id.room_player_limit);
-        roomBot = findViewById(R.id.room_bot);
+
+        mContext = this;
+
         createServer = (TextView) findViewById(R.id.create_home);
         playerName = MainActivity.getPlayerName();
         roomName = MainActivity.getPlayerName() + "的房间";
@@ -110,11 +115,7 @@ public class RoomActivity extends AppCompatActivity {
         createServer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int limit, bot;
-                limit = Integer.parseInt(roomPlayerLimit.getText().toString());
-                bot = Integer.parseInt(roomBot.getText().toString());
-
-                Network.getInstance().createRoom(networkInterface, playerName, roomName, limit);
+                createRoomView(playerName, roomName);
             }
         });
 
@@ -139,5 +140,40 @@ public class RoomActivity extends AppCompatActivity {
             }
         });
         Network.getInstance().scanRoomList(networkInterface);
+    }
+
+    private void createRoomView(final String playerName, String roomName){
+        LinearLayout createView = (LinearLayout)getLayoutInflater().inflate(R.layout.dialog_createroom,null);
+        final EditText inputRoomName = (EditText)createView.findViewById(R.id.room_room_name);
+        inputRoomName.setText(roomName);
+        final EditText inputPlayerLimit = (EditText)createView.findViewById(R.id.room_player_limit);
+        final EditText inputBotNum = (EditText)createView.findViewById(R.id.room_bot);
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(mContext);
+        AlertDialog alertDialog = dialogBuilder
+                .setTitle(mContext.getResources().getString(R.string.serverView_createRoom))
+                .setView(createView)
+                .setNegativeButton(mContext.getResources().getString(R.string.dialog_createRoom_cancel), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {}
+                })
+                .setPositiveButton(mContext.getResources().getString(R.string.dialog_createRoom_confirm), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if (inputRoomName.getText().toString().equals("") || inputPlayerLimit.getText().toString().equals("") || inputBotNum.getText().toString().equals("")) {
+                            Toast.makeText(mContext, "内容不能为空！", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        int playerLimit, bot;
+                        playerLimit = Integer.parseInt(inputPlayerLimit.getText().toString());
+                        bot = Integer.parseInt(inputBotNum.getText().toString());
+                        if (playerLimit <= 0 || bot < 0 || playerLimit > 4 || bot > playerLimit - 1) {
+                            Toast.makeText(mContext, "非法输入！", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        Network.getInstance().createRoom(networkInterface, playerName,inputRoomName.getText().toString(), playerLimit, bot);
+                    }
+                })
+                .create();
+        alertDialog.show();
     }
 }

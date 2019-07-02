@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">flychessclientlite</string>
-    <string name="Main_button_online">Online</string>
-    <string name="Server_button_refresh">Scan</string>
-    <string name="Server_button_create">Create</string>
+    <string name="serverView_createRoom">创建房间</string>
+    <string name="dialog_createRoom_roomName">房间名称：</string>
+    <string name="dialog_createRoom_playerLimit">玩家上限：</string>
+    <string name="dialog_createRoom_botNumber">BOT数量：</string>
+    <string name="dialog_createRoom_cancel">取消</string>
+    <string name="dialog_createRoom_confirm">创建</string>
 </resources>

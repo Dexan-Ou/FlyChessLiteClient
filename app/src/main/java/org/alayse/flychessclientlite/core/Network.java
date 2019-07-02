@@ -51,7 +51,7 @@ public class Network {
 
             @Override
             public void onPreEncode(Main.RoomListRequest req) {
-                req.type = Main.RoomListRequest.ALL;
+                req.type = Main.RoomListRequest.EMPTY;
             }
 
             @Override
@@ -87,11 +87,11 @@ public class Network {
         MarsServiceProxy.send(taskGetRoomList.setHttpRequest(SERVER_HOST, "/game/getroomlist"));
     }
 
-    public void createRoom(final NetworkInterface nif, String userName, String roomName, int playerLimit){
+    public void createRoom(final NetworkInterface nif, String userName, String roomName, int playerLimit, int botNum){
         Log.i(TAG, "createRoom");
         if (createRoomMessageTask != null)
             MarsServiceProxy.cancel(createRoomMessageTask);
-        createRoomMessageTask = new CreateRoomMessageTask(this.access_token, userName, roomName, playerLimit, 0)
+        createRoomMessageTask = new CreateRoomMessageTask(this.access_token, userName, roomName, playerLimit, botNum)
                 .onError(new Runnable() {
                     @Override
                     public void run() {
