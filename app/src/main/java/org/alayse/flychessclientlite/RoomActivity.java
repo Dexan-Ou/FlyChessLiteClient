@@ -138,6 +138,7 @@ public class RoomActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id){
                 //加入房间函数
+                roomName = roomList.get(position).get("name");
                 Network.getInstance().joinRoom(networkInterface, playerName, roomList.get(position).get("name"));
             }
         });
