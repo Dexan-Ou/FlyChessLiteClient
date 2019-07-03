@@ -28,6 +28,12 @@ public class FlyingChessActivity extends AppCompatActivity {
         v.setIsReplay(isReplay);
         v.setReplayFile(replayFile);
         Log.e("Size", "" + ObserveCore.getInstance().getSize());
+        while(ObserveCore.getInstance().getSize() > 0){
+            if(ObserveCore.getInstance().getMessage().content.equals("game start")){
+                v.setIsWait(false);
+                ObserveCore.getInstance().popMessage();
+            }
+        }
         v.startConnect();
     }
 }

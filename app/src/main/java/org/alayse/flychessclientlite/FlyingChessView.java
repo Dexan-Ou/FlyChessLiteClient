@@ -255,6 +255,9 @@ public class FlyingChessView extends View implements Observer{
                 else{
                     IsDicePress = false;
                     PressPlanePosition = null;
+                    if(IsAI){
+                        AIMessageReceive = true;
+                    }
                 }
                 Log.d("NextPlayer", "" + message.nextplayer);
             }
@@ -297,21 +300,16 @@ public class FlyingChessView extends View implements Observer{
             // 如果当前点击位置有飞机
             if(result.get("flag").getChessId() == 1 && (!IsPlanePress) && (!IsAI) && (!IsReplay) && NextPlayer == 1){
                 Position position = result.get("position");
-                if(result.get("flag").getChessNum() == 0 || NowDice == 5){
-                    IsPlanePress = true;
-                    Log.d("PlanePressTest", "" + IsPlanePress);
-                    PressPlanePosition = position;
+                IsPlanePress = true;
+                Log.d("PlanePressTest", "" + IsPlanePress);
+                PressPlanePosition = position;
 
-                    if (event.getAction() == MotionEvent.ACTION_DOWN){
-                        sendStatus(position);
-                    }
-                    else if (event.getAction() == MotionEvent.ACTION_UP){
-                        PressPlanePosition = null;
-                        this.postInvalidate();
-                    }
+                if (event.getAction() == MotionEvent.ACTION_DOWN){
+                    sendStatus(position);
                 }
-                else{
-                    IsDicePress = false;
+                else if (event.getAction() == MotionEvent.ACTION_UP){
+                    PressPlanePosition = null;
+                    this.postInvalidate();
                 }
             }
 
@@ -416,15 +414,17 @@ public class FlyingChessView extends View implements Observer{
                     
                     PressPlanePosition = null;
                     Position nextPosition = null;
+                    int lastColor;
                     // 测试动画效果，走20步
                     for(int i=1; i<tempFlight.size(); ++i){
                         nextPosition = tempFlight.get(i-1);
                         int index = findPlanePosition(nextPosition);
+                        lastColor = nextPosition.getChessId();
                         if(index >= 0){
-                            if(!PlanePositions.get(index).decNum()){
+                            nextPosition = tempFlight.get(i);
+                            if(nextPosition.getChessId() == lastColor && (!PlanePositions.get(index).decNum())){
                                 PlanePositions.remove(index);
                             }
-                            nextPosition = tempFlight.get(i);
                             index = findPlanePosition(nextPosition);
                             if(index >= 0){
                                 PlanePositions.get(index).incNum();
@@ -664,7 +664,7 @@ public class FlyingChessView extends View implements Observer{
     }
 
     private void AIRun(){
-        UIHandler = new Handler(Looper.getMainLooper()){
+        final Handler AIHandler = new Handler(Looper.getMainLooper()){
             @Override
             public void handleMessage(Message msg){
                 if(msg.what == 0x123){
@@ -689,41 +689,22 @@ public class FlyingChessView extends View implements Observer{
                             Message msg = null;
                             for(int i=0; i<80; ++i){
                                 NowDice = (int)(Math.random()*6);
-                                msg = UIHandler.obtainMessage();
+                                msg = AIHandler.obtainMessage();
                                 msg.what = 0x123;
-                                UIHandler.sendMessage(msg);
+                                AIHandler.sendMessage(msg);
                                 if(i < 79){
                                     Thread.sleep(25);
                                 }
                             }
-                            msg = UIHandler.obtainMessage();
+                            msg = AIHandler.obtainMessage();
                             msg.what = 0x124;
-                            UIHandler.sendMessage(msg);
-                            while(!IsPlanePress);
-
-                            Position selectPosition = null;
-                            for(Position pos: PlanePositions){
-                                if(pos.getChessId() == NowPlayerId && (NowDice == 5 || (isInAirport(pos) == 0))){
-                                    if(selectPosition == null){
-                                        selectPosition = pos;
-                                    }
-                                    else if(Math.random() > 0.5){
-                                        selectPosition = pos;
-                                    }
-                                }
-                            }
-                            Thread.sleep(500);
-                            Log.d("Position", "" + selectPosition);
+                            AIHandler.sendMessage(msg);
+                            while(IsPlanePress);
                             
-                            if(selectPosition != null){
-                                String content = "" + "0," + (NowDice+1) + "," + generateMessage(selectPosition);
-                                Log.d("Send", content);
-                                Network.getInstance().sendAction(networkInterface, NowUser, content, NowRoom);
-                                AIMessageReceive = false;
-                            }
-                            else{
-                                AIMessageReceive = true;
-                            }
+                            String content = "" + "1," + (NowDice+1) + ",0";
+                            Log.d("Send", content);
+                            Network.getInstance().sendAction(networkInterface, NowUser, content, NowRoom);
+                            AIMessageReceive = false;
                         }
                     }
                 }
