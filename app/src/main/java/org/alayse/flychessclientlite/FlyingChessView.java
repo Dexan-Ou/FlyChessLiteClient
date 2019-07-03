@@ -163,7 +163,7 @@ public class FlyingChessView extends View implements Observer{
         Name2Colors.put("Red", Color.RED);
         Name2Colors.put("Blue", Color.rgb(30, 144, 255));
         Name2Colors.put("Green", Color.rgb(50, 215, 35));
-        Name2Colors.put("Gray", Color.rgb(211, 211, 211));
+        Name2Colors.put("Gray", Color.rgb(170, 170, 170));
 
         Id2Colors = new String[5];
         Id2Colors[0] = "Yellow";
@@ -424,10 +424,11 @@ public class FlyingChessView extends View implements Observer{
                     
                     PressPlanePosition = null;
                     Position lastPosition = null, nextPosition = null;
-                    int nowColor, lastIndex, nextIndex;
+                    int nowColor, lastIndex, nextIndex, temp;
                     // 测试动画效果，走20步
                     for(int i=0; i<tempFlight.size(); ++i){
                         lastIndex = tempFlight.get(i).get(0);
+                        temp = lastIndex;
                         nowColor = tempFlight.get(i).get(2);
 
                         if(lastIndex != -1){
@@ -440,7 +441,8 @@ public class FlyingChessView extends View implements Observer{
                         }
 
                         nextPosition = Positions.get(tempFlight.get(i).get(1));
-                        if(isEnd(tempFlight.get(i).get(0), nowColor)){
+                        if(temp != -1 && isEnd(temp, nowColor)){
+                            Log.e("To", "End");
                             nextPosition = new Position(nextPosition.getX(), nextPosition.getY(), 4, 1);
                         }
                         else{
@@ -1330,6 +1332,18 @@ public class FlyingChessView extends View implements Observer{
     }
 
     private boolean isEnd(int positionId, int color){
-        return (color==0&&positionId==57)||(color==1&&positionId==63)&&(color==2&&positionId==69)&&(color==2&&positionId==75);
+        if(color==0 && positionId==57){
+            return true;
+        }
+        if(color==1 && positionId==63){
+            return true;
+        }
+        if(color==2 && positionId==69){
+            return true;
+        }
+        if(color==3 && positionId==75){
+            return true;
+        }
+        return false;
     }
 }

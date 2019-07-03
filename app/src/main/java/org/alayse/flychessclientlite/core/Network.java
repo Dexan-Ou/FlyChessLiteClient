@@ -20,7 +20,7 @@ import java.util.List;
 public class Network {
     private static final String TAG = "Flychess.Network";
 
-    public static final String SERVER_HOST = "localhost";
+    public static final String SERVER_HOST = "45.77.232.49";
     public static final int SERVER_SHORT_PORT = 8080;
     public static final int SERVER_LONG_PORT = 8081;
     private static final Network inst = new Network();
