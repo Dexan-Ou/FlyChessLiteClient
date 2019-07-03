@@ -441,7 +441,7 @@ public class FlyingChessView extends View implements Observer{
                         }
 
                         nextPosition = Positions.get(tempFlight.get(i).get(1));
-                        if(temp != -1 && isEnd(temp, nowColor)){
+                        if(temp != -1 && isEnd(temp, nowColor) && isInAirport(nextPosition) == 1){
                             Log.e("To", "End");
                             nextPosition = new Position(nextPosition.getX(), nextPosition.getY(), 4, 1);
                         }
