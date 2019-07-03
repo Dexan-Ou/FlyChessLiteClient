@@ -109,7 +109,7 @@ public class FlyingChessView extends View implements Observer{
     private Handler UIHandler;
     private int PlaneNum;
     private int NowDice;
-    private ArrayList<Position> Flight;
+    private ArrayList<ArrayList<Integer>> Flight;
     private boolean IsAI;
     private boolean AIMessageReceive;
     private volatile static boolean IsPlanePress;
@@ -161,14 +161,16 @@ public class FlyingChessView extends View implements Observer{
         Name2Colors = new HashMap<String, Integer>();
         Name2Colors.put("Yellow", Color.rgb(215, 215, 45));
         Name2Colors.put("Red", Color.RED);
-        Name2Colors.put("Blue", Color.BLUE);
+        Name2Colors.put("Blue", Color.rgb(30, 144, 255));
         Name2Colors.put("Green", Color.rgb(50, 215, 35));
+        Name2Colors.put("Gray", Color.rgb(211, 211, 211));
 
-        Id2Colors = new String[4];
+        Id2Colors = new String[5];
         Id2Colors[0] = "Yellow";
         Id2Colors[1] = "Blue";
         Id2Colors[2] = "Green";
         Id2Colors[3] = "Red";
+        Id2Colors[4] = "Gray";
 
         Direction2Id = new HashMap<String, Integer>();
         Direction2Id.put("Left", 0);
@@ -186,7 +188,7 @@ public class FlyingChessView extends View implements Observer{
 
         Positions = null;
         PlanePositions = new ArrayList<Position>();
-        Flight = new ArrayList<Position>();
+        Flight = new ArrayList<ArrayList<Integer>>();
         PressPlanePosition = null;
         PlaneNum = 0;
         NowDice = 0;
@@ -236,21 +238,23 @@ public class FlyingChessView extends View implements Observer{
             else {
                 NextPlayer = message.nextplayer;
                 if(content.length()>0){
-                    int nowChess;
+                    int nowChess, lastChess = -1;
                     String[] activities = message.content.split(";");
-                    Position lastPosition, nextPosition;  
                     for(String activity: activities){
                         String[] temp = activity.substring(1, activity.length()-1).split(",");
                         if(temp.length > 2){
-                            nowChess = Integer.parseInt(temp[0]);
-                            lastPosition = Positions.get(Integer.parseInt(temp[1]));
-                            nextPosition = Positions.get(Integer.parseInt(temp[2]));
-                            Flight.add(new Position(lastPosition.getX(), lastPosition.getY(), nowChess, 1));
-                            Flight.add(new Position(nextPosition.getX(), nextPosition.getY(), nowChess, 1));
+                            ArrayList<Integer> action = new ArrayList<Integer>();
+                            action.add(Integer.parseInt(temp[1]));
+                            action.add(Integer.parseInt(temp[2]));
+                            action.add(Integer.parseInt(temp[0]));
+                            Flight.add(action);
+                            updatePlanes(Flight);
+                        }
+                        else{
+                            Toast.makeText(getContext(), "Game Finished\n"+Id2Colors[Integer.parseInt(temp[0])]+" is winner!", Toast.LENGTH_SHORT).show();
+                            myPositiveOnclick("退出");
                         }
                     }
-                    Log.d("FlightSize", "" + Flight.size()); 
-                    updatePlanes(Flight);
                 }
                 else{
                     IsDicePress = false;
@@ -385,8 +389,8 @@ public class FlyingChessView extends View implements Observer{
         }).start();
     }
 
-    private void updatePlanes(ArrayList<Position> Flight){
-        final ArrayList<Position> tempFlight = Flight;
+    private void updatePlanes(ArrayList<ArrayList<Integer>> Flight){
+        final ArrayList<ArrayList<Integer>> tempFlight = Flight;
         UIHandler = new Handler(Looper.getMainLooper()){
             @Override
             public void handleMessage(Message msg){
@@ -410,36 +414,42 @@ public class FlyingChessView extends View implements Observer{
                     Message msg = UIHandler.obtainMessage();
                     msg.what = 0x123;
                     UIHandler.sendMessage(msg);
-                    Thread.sleep(250);
+                    Thread.sleep(500);
                     
                     PressPlanePosition = null;
-                    Position nextPosition = null;
-                    int lastColor;
+                    Position lastPosition = null, nextPosition = null;
+                    int nowColor, lastIndex, nextIndex;
                     // 测试动画效果，走20步
-                    for(int i=1; i<tempFlight.size(); ++i){
-                        nextPosition = tempFlight.get(i-1);
-                        int index = findPlanePosition(nextPosition);
-                        lastColor = nextPosition.getChessId();
-                        if(index >= 0){
-                            nextPosition = tempFlight.get(i);
-                            if(nextPosition.getChessId() == lastColor && (!PlanePositions.get(index).decNum())){
-                                PlanePositions.remove(index);
-                            }
-                            index = findPlanePosition(nextPosition);
-                            if(index >= 0){
-                                PlanePositions.get(index).incNum();
-                            }
-                            else{
-                                PlanePositions.add(new Position(nextPosition.getX(), nextPosition.getY(), nextPosition.getChessId(), 1));
-                            }
+                    for(int i=0; i<tempFlight.size(); ++i){
+                        lastPosition = Positions.get(tempFlight.get(i).get(0));
+                        nextPosition = Positions.get(tempFlight.get(i).get(1));
+                        nowColor = tempFlight.get(i).get(2);
+                        lastPosition = new Position(lastPosition.getX(), lastPosition.getY(), nowColor, 1);
+                        lastIndex = findPlanePosition(lastPosition);
+                        if(!PlanePositions.get(lastIndex).decNum()){
+                            PlanePositions.remove(lastIndex);
                         }
+                        
+                        if(isEnd(tempFlight.get(i).get(0), nowColor)){
+                            nextPosition = new Position(nextPosition.getX(), nextPosition.getY(), 4, 1);
+                        }
+                        else{
+                            nextPosition = new Position(nextPosition.getX(), nextPosition.getY(), nowColor, 1);
+                        }
+                        nextIndex = findPlanePosition(nextPosition);
+                        if(nextIndex >= 0){
+                            PlanePositions.get(nextIndex).incNum();
+                        }
+                        else{
+                            PlanePositions.add(nextPosition);
+                        }
+                        
                         savePlanePositions();
-
                         msg = UIHandler.obtainMessage();
                         msg.what = 0x123;
                         UIHandler.sendMessage(msg);
                         if(i < tempFlight.size()-1){
-                            Thread.sleep(250);
+                            Thread.sleep(500);
                         }
                     }
                     msg = UIHandler.obtainMessage();
@@ -596,7 +606,6 @@ public class FlyingChessView extends View implements Observer{
                 drawPlane(position.getX(), position.getY(), position.getChessId(), canvas, MyPaint);
             }
             drawPress(canvas);
-
             drawDice(canvas, MyPaint, NowDice);
         }
         else{
@@ -683,7 +692,7 @@ public class FlyingChessView extends View implements Observer{
             public void run(){
                 try{
                     while(IsAI){
-                        if(NextPlayer == 1 && AIMessageReceive){
+                        if(NextPlayer == 1 && AIMessageReceive && (!IsDicePress)){
                             IsDicePress = true;
                             IsPlanePress = true;
                             Message msg = null;
@@ -1148,17 +1157,24 @@ public class FlyingChessView extends View implements Observer{
 
     // 画飞机
     private void drawPlane(float circleCenterX, float circleCenterY, int nowColor, Canvas canvas, Paint paint){
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setColor(Color.BLACK);
-        paint.setStrokeWidth(5);
-        Path planePath = getPlanePath(circleCenterX, circleCenterY);
-        canvas.drawPath(planePath, paint);
+        if(nowColor < 4){
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setColor(Color.BLACK);
+            paint.setStrokeWidth(5);
+            Path planePath = getPlanePath(circleCenterX, circleCenterY);
+            canvas.drawPath(planePath, paint);
 
-        paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Name2Colors.get(Id2Colors[nowColor]));
-        paint.setStrokeWidth(2);
-        planePath = getPlanePath(circleCenterX, circleCenterY);
-        canvas.drawPath(planePath, paint);
+            paint.setStyle(Paint.Style.FILL);
+            paint.setColor(Name2Colors.get(Id2Colors[nowColor]));
+            paint.setStrokeWidth(2);
+            planePath = getPlanePath(circleCenterX, circleCenterY);
+            canvas.drawPath(planePath, paint);
+        }
+        else{
+            paint.setStyle(Paint.Style.FILL);
+            paint.setColor(Name2Colors.get(Id2Colors[nowColor]));
+            canvas.drawCircle(circleCenterX, circleCenterY, (float)RADIUS, paint);
+        }
     }
 
     // 画飞行路径
@@ -1224,6 +1240,16 @@ public class FlyingChessView extends View implements Observer{
         }
     }
 
+    private int findPosition(Position nextPosition){
+        int i;
+        for(i=0; i<Positions.size(); ++i){
+            if(Positions.get(i).equals(nextPosition)){
+                return i;
+            }
+        }
+        return -1;
+    }
+
     private int findPlanePosition(Position nextPosition){
         int i;
         for(i=0; i<PlanePositions.size(); ++i){
@@ -1268,8 +1294,7 @@ public class FlyingChessView extends View implements Observer{
             }
         }
 
-        int inAirport = isInAirport(result.get("position"));
-        result.put("flag", new Position(0, 0, flag, inAirport));
+        result.put("flag", new Position(0, 0, flag, 0));
         return result;
     }
 
@@ -1292,5 +1317,9 @@ public class FlyingChessView extends View implements Observer{
         float backCenterX = (float)BACK_BEGINX + halfWidth, backCenterY = (float)BACK_BEGINY + halfHeight;
         float x = (float)nowX, y = (float)nowY;
         return Math.abs(backCenterX-x) < halfWidth && Math.abs(backCenterY-y) < halfHeight;
+    }
+
+    private boolean isEnd(int positionId, int color){
+        return (color==0&&positionId==57)||(color==1&&positionId==63)&&(color==2&&positionId==69)&&(color==2&&positionId==75);
     }
 }
