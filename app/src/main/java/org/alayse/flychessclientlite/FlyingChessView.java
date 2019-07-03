@@ -248,13 +248,19 @@ public class FlyingChessView extends View implements Observer{
                             action.add(Integer.parseInt(temp[2]));
                             action.add(Integer.parseInt(temp[0]));
                             Flight.add(action);
-                            updatePlanes(Flight);
                         }
-                        else{
-                            Toast.makeText(getContext(), "Game Finished\n"+Id2Colors[Integer.parseInt(temp[0])]+" is winner!", Toast.LENGTH_SHORT).show();
-                            myPositiveOnclick("退出");
+                        else if(temp.length == 2){
+                            if(Integer.parseInt(temp[1]) != -1){
+                                Toast.makeText(getContext(), "Game Finished\n"+Id2Colors[Integer.parseInt(temp[0])]+" is winner!", Toast.LENGTH_SHORT).show();
+                                myPositiveOnclick("退出");
+                            }
+                            else{
+                                NextPlayer = Integer.parseInt(temp[0]);
+                                PlanePositions.clear();
+                            }
                         }
                     }
+                    updatePlanes(Flight);
                 }
                 else{
                     IsDicePress = false;
@@ -421,15 +427,19 @@ public class FlyingChessView extends View implements Observer{
                     int nowColor, lastIndex, nextIndex;
                     // 测试动画效果，走20步
                     for(int i=0; i<tempFlight.size(); ++i){
-                        lastPosition = Positions.get(tempFlight.get(i).get(0));
-                        nextPosition = Positions.get(tempFlight.get(i).get(1));
+                        lastIndex = tempFlight.get(i).get(0);
                         nowColor = tempFlight.get(i).get(2);
-                        lastPosition = new Position(lastPosition.getX(), lastPosition.getY(), nowColor, 1);
-                        lastIndex = findPlanePosition(lastPosition);
-                        if(lastIndex != -1 && (!PlanePositions.get(lastIndex).decNum())){
-                            PlanePositions.remove(lastIndex);
+
+                        if(lastIndex != -1){
+                            lastPosition = Positions.get(tempFlight.get(i).get(0));
+                            lastPosition = new Position(lastPosition.getX(), lastPosition.getY(), nowColor, 1);
+                            lastIndex = findPlanePosition(lastPosition);
+                            if(lastIndex != -1 && (!PlanePositions.get(lastIndex).decNum())){
+                                PlanePositions.remove(lastIndex);
+                            }
                         }
-                        
+
+                        nextPosition = Positions.get(tempFlight.get(i).get(1));
                         if(isEnd(tempFlight.get(i).get(0), nowColor)){
                             nextPosition = new Position(nextPosition.getX(), nextPosition.getY(), 4, 1);
                         }
