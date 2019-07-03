@@ -426,7 +426,7 @@ public class FlyingChessView extends View implements Observer{
                         nowColor = tempFlight.get(i).get(2);
                         lastPosition = new Position(lastPosition.getX(), lastPosition.getY(), nowColor, 1);
                         lastIndex = findPlanePosition(lastPosition);
-                        if(!PlanePositions.get(lastIndex).decNum()){
+                        if(lastIndex != -1 && (!PlanePositions.get(lastIndex).decNum())){
                             PlanePositions.remove(lastIndex);
                         }
                         
